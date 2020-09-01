@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# I want to clean data and analyze the top 3-5 diseases throughout months and years. 
+# CDC NNDSS - Table I. infrequently reported notifiable diseases 
+# Data for this can be viewed and downloaded at https://healthdata.gov/dataset/nndss-table-i-infrequently-reported-notifiable-diseases-1
+# 
+# The purpose of this data is to analyze the top 3-5 diseases throughout all twelve months and years 2013-2017. 
 
-# In[535]:
+# In[585]:
 
 
 import numpy as np
@@ -16,7 +19,7 @@ import datetime
 get_ipython().run_line_magic('matplotlib', 'inline')
 
 
-# In[536]:
+# In[586]:
 
 
 # Read the csv file
@@ -24,14 +27,14 @@ df18 = pd.read_csv("18_NNDSS.csv")
 df18.head()
 
 
-# In[537]:
+# In[587]:
 
 
 # Clean up the column headers
 df18.columns = df18.columns.str.strip().str.lower().str.replace('  ', ' ').str.replace(' ', '_').str.replace('(', '').str.replace(')', '')
 
 
-# In[538]:
+# In[588]:
 
 
 # Delete unnecessary columns
@@ -46,27 +49,27 @@ columns_to_drop = ['current_week', 'current_week,_flag', 'cum_2018', 'cum_2018,_
 df18.drop(columns_to_drop, inplace=True, axis=1)
 
 
-# In[539]:
+# In[589]:
 
 
 # Delete non ASCII characters
 df18['disease'] = df18['disease'].apply(lambda x: ''.join([" " if (ord(i) < 32 or ord(i) > 126) or ord(i) == 42  else i for i in x]))
 
 
-# In[540]:
+# In[590]:
 
 
 df18.head()
 
 
-# In[541]:
+# In[591]:
 
 
 # Shorten some of the column names
 df18.columns = df18.columns.str.replace('_reported_for_pervious_years_', '_')
 
 
-# In[542]:
+# In[592]:
 
 
 #Reorder columns
@@ -74,13 +77,13 @@ df18 = df18[[ 'disease','mmwr_week', 'total_cases_2013', 'total_cases_2014', 'to
 df18
 
 
-# In[543]:
+# In[593]:
 
 
 df18.info()
 
 
-# In[544]:
+# In[594]:
 
 
 # Replace null values with 0
@@ -92,26 +95,26 @@ df18[cols] = df18[cols].fillna(0)
 #astype(int)
 
 
-# In[545]:
+# In[595]:
 
 
 df18.isnull().sum()
 
 
-# In[546]:
+# In[596]:
 
 
 df18.info()
 
 
-# In[547]:
+# In[597]:
 
 
 # Check for duplicate rows
 sum(df18.duplicated())
 
 
-# In[548]:
+# In[598]:
 
 
 has_duplicate = df18.duplicated()
@@ -121,7 +124,7 @@ duplicates = df18[has_duplicate]
 duplicates
 
 
-# In[549]:
+# In[599]:
 
 
 #Week 32 has duplicate data, need to drop duplicates
@@ -130,27 +133,27 @@ df18.drop_duplicates(inplace = True)
 sum(df18.duplicated())
 
 
-# In[550]:
+# In[600]:
 
 
 # Filter out diseases with 0 cases between 2013-2017
 df18 = df18[(df18.total_cases_2017 > 0) | (df18.total_cases_2016 > 0) | (df18.total_cases_2015 > 0)| (df18.total_cases_2014 > 0) & (df18.total_cases_2013 > 0)]
 
 
-# In[551]:
+# In[601]:
 
 
 df18.shape
 
 
-# In[552]:
+# In[602]:
 
 
 #Stripping white spaces
 df18.disease = df18.disease.str.strip()
 
 
-# In[553]:
+# In[603]:
 
 
 # Added all cases for all weeks per disease in a new dataframe
@@ -158,7 +161,7 @@ df18_sum = df18.groupby('disease').sum()
 df18_sum
 
 
-# In[554]:
+# In[604]:
 
 
 # Add a column for total cases
@@ -166,7 +169,7 @@ df18_sum['case_total'] = df18_sum['total_cases_2017'] + df18_sum['total_cases_20
 df18_sum
 
 
-# In[555]:
+# In[605]:
 
 
 #Sorted by largest case total value
@@ -174,7 +177,7 @@ top_df18_yrs = df18_sum.sort_values('case_total', ascending=False).reset_index()
 top_df18_yrs
 
 
-# In[556]:
+# In[606]:
 
 
 #Created variables for each top disease
@@ -185,7 +188,7 @@ Typhoid_fever = top_df18_yrs.iloc[3,7]
 Hemolytic_uremic = top_df18_yrs.iloc[4,7]
 
 
-# In[557]:
+# In[607]:
 
 
 #Bar chart for each top disease
@@ -200,7 +203,9 @@ plt.xlabel('Disease', fontsize = 16)
 plt.ylabel('Count', fontsize = 16);
 
 
-# In[558]:
+# The top 5 diseases according to the CDC are: Liseriosis, Cyclosporiasis, Syphilis, Typhoid Fever, and Hemolytic Uremia.
+
+# In[608]:
 
 
 #Chart of diseases by year
@@ -214,14 +219,16 @@ top_df18_yrs = pd.DataFrame({
 top_df18_yrs.T.plot(figsize = [12, 8]);
 
 
-# In[559]:
+# Listeriosis seems to maintain a high level of occurence throughout the years, without much fluctuation. Cyclosporiasis has a more fluctuation, starting around 40,000 in 2013, then decreasing to 20,000 the next year, and continues to have peaks and valleys until spiking up to approximately 60,000 in 2017.
+
+# In[609]:
 
 
 # Original clean dataframe
 df18
 
 
-# In[560]:
+# In[610]:
 
 
 #Copy original clean dataframe
@@ -229,7 +236,7 @@ df18_months = df18
 df18_months
 
 
-# In[561]:
+# In[611]:
 
 
 #Added a year column to calculate month
@@ -237,7 +244,7 @@ df18_months['year_2013'] = 2013
 df18_months
 
 
-# In[562]:
+# In[612]:
 
 
 #Calculated month and year in new column
@@ -247,7 +254,7 @@ df18['month'] = pd.to_datetime(df18['week_year'], format='%Y%j')
 df18_months
 
 
-# In[563]:
+# In[613]:
 
 
 #Added a month column based on new date
@@ -256,7 +263,7 @@ df18_months['month'] = pd.DatetimeIndex(df18_months['month']).month
 df18_months
 
 
-# In[564]:
+# In[614]:
 
 
 #Reorder columns in new dataset
@@ -270,7 +277,7 @@ df18_months
 
 
 
-# In[565]:
+# In[615]:
 
 
 #Filtered the top 5 disease from previous analyses
@@ -278,7 +285,7 @@ df18_months = df18_months[df18_months["disease"].isin(["Listeriosis", "Cyclospor
 df18_months
 
 
-# In[566]:
+# In[616]:
 
 
 #Filtered out disease totals by month
@@ -286,19 +293,29 @@ df18_months = df18_months.groupby(['month', 'disease'], as_index=False).sum()
 df18_months
 
 
-# In[584]:
+# In[618]:
 
 
+#Plot top diseases by month
 fig, ax = plt.subplots(figsize=(8,5))
 ax=sns.lineplot(data=df18_months, x='month', y='total_cases_2013', hue='disease')
+ax.set(ylim=(900, 6000))
+
 fig, ax = plt.subplots(figsize=(8,5))
 ax=sns.lineplot(data=df18_months, x='month', y='total_cases_2014', hue='disease')
+ax.set(ylim=(900, 6000))
+
 fig, ax = plt.subplots(figsize=(8,5))
 ax=sns.lineplot(data=df18_months, x='month', y='total_cases_2015', hue='disease')
+ax.set(ylim=(900, 6000))
+
 fig, ax = plt.subplots(figsize=(8,5))
 ax=sns.lineplot(data=df18_months, x='month', y='total_cases_2016', hue='disease')
+ax.set(ylim=(900, 6000))
+
 fig, ax = plt.subplots(figsize=(8,5))
-ax=sns.lineplot(data=df18_months, x='month', y='total_cases_2017', hue='disease');
+ax=sns.lineplot(data=df18_months, x='month', y='total_cases_2017', hue='disease')
+ax.set(ylim=(900, 6000));
 
 
 # In[ ]:
